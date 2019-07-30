@@ -13,18 +13,55 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{c16db318-3cfc-4e08-89d3-566b6e013ecf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
+    <ClCompile Include="StencilTesting.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="StencilTesting.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    <None Include="Shaders\stencilTesting.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\stencilTesting.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\stencilTesting_color.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\stencilTesting_color.frag">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\Textures\2.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Resources\Textures\img.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Resources\Textures\img2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Resources\Textures\logo.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Resources\Textures\logo.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="Resources\Textures\metal.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

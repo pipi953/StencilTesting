@@ -60,7 +60,7 @@ int main()
 #endif // __APPLE
 
 	//	create a window with glfw
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Layered Rendering", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "StencilTesting", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -92,7 +92,7 @@ int main()
 	//	创建 着色器
 //	Shader shader("Shader/layeredRendering.vs", "Shader/layeredRendering.fs", "Shader/layeredRendering.gs");
 	Shader shader("Shaders/stencilTesting.vert", "Shaders/stencilTesting.frag");
-	Shader colorShader("Shaders/stencilTesting_color.vert", "Shaders/stencilTesting_color.frag");
+	Shader floorShader("Shaders/stencilTesting_color.vert", "Shaders/stencilTesting_color.frag");
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -202,22 +202,28 @@ int main()
 
 		//	----------------------开始渲染场景---------------------------------
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		// 清除颜色缓冲区 深度缓冲区 模板缓冲区
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // don't forget to clear the stencil buffer!
 
-		 // set uniforms
-		colorShader.use();
+		//	设置相机参数，并绑定到着色器
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		colorShader.setMat4("view", view);
-		colorShader.setMat4("projection", projection);
+		//	分别为当前的两个着色器绑定相机参数
+		floorShader.use();	//	激活 地板的着色器 (shader)
+		floorShader.setMat4("view", view);	//	绑定视图
+		floorShader.setMat4("projection", projection);	//	绑定投影
 
-		shader.use();
+		shader.use();	//	激活 物体的着色器 (shader)
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 
-		// draw floor as normal, but don't write the floor to the stencil buffer, we only care about the containers. We set its mask to 0x00 to not write to the stencil buffer.
-		glStencilMask(0x00);
+		// 正常绘制地板，但不要将地板写入模板缓冲区，我们只关心容器。 我们将其掩码设置为0x00以不写入模板缓冲区。
+		/*
+		 *** 		glStencilMask(0xFF); // 每一位写入模板缓冲时都保持原样
+		 ***		glStencilMask(0x00); // 每一位在写入模板缓冲时都会变成0（禁用写入）
+		 */
+		glStencilMask(0x00);	//	绘制地板时，禁止修改深度缓冲区
 		// floor
 		glBindVertexArray(planeVAO);
 		glBindTexture(GL_TEXTURE_2D, floorTexture);
@@ -225,47 +231,47 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
-		// 1st. render pass, draw objects as normal, writing to the stencil buffer
+		// 1st. 渲染过程，正常绘制对象，写入模板缓冲区
 		// --------------------------------------------------------------------
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
+
+		glStencilMask(0xFF);	//	绘制物体时，允许修改深度缓冲区
 		// cubes
 		glBindVertexArray(cubeVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, cubeTexture);
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		shader.setMat4("model", model);
+		//model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		//shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		shader.setMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		//shader.setMat4("model", model);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
-		// Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing 
-		// the objects' size differences, making it look like borders.
+		// 2nd. 渲染过程：现在绘制对象的略微缩放版本，这次禁用模板写入。
+		// 因为模板缓冲区现在填充了几个1。 缓冲区的1部分未绘制，因此仅绘制对象的大小差异，使其看起来像边框。
 		// -----------------------------------------------------------------------------------------------------------------------------
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
-		colorShader.use();
+		floorShader.use();
 		float scale = 1.1;
 		// cubes
 		glBindVertexArray(cubeVAO);
 		glBindTexture(GL_TEXTURE_2D, cubeTexture);
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		//model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 		model = glm::scale(model, glm::vec3(scale, scale, scale));
-		colorShader.setMat4("model", model);
+		floorShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(scale, scale, scale));
-		colorShader.setMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		//model = glm::scale(model, glm::vec3(scale, scale, scale));
+		//floorShader.setMat4("model", model);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
-		glStencilMask(0xFF);
-		glEnable(GL_DEPTH_TEST);
+		glStencilMask(0xFF);	//	深度缓冲区 关闭修改
+		glEnable(GL_DEPTH_TEST);	//	开启深度测试
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------

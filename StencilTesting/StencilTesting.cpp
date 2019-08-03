@@ -13,6 +13,9 @@
 #include "src/Shader.h"
 
 #include <iostream>
+#include <math.h>
+
+# define M_PI           3.14159265358979323846  /* pi */
 
 //	callback function
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -89,10 +92,10 @@ int main()
 	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-	//	创建 着色器
-//	Shader shader("Shader/layeredRendering.vs", "Shader/layeredRendering.fs", "Shader/layeredRendering.gs");
+	//	创建 负责物体和地板绘制的着色器
 	Shader shader("Shaders/stencilTesting.vert", "Shaders/stencilTesting.frag");
-	Shader floorShader("Shaders/stencilTesting_color.vert", "Shaders/stencilTesting_color.frag");
+	//	负责绘制物体轮廓的shader
+	Shader outlineShader("Shaders/stencilTesting_color.vert", "Shaders/stencilTesting_color.frag");
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -210,9 +213,9 @@ int main()
 		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		//	分别为当前的两个着色器绑定相机参数
-		floorShader.use();	//	激活 地板的着色器 (shader)
-		floorShader.setMat4("view", view);	//	绑定视图
-		floorShader.setMat4("projection", projection);	//	绑定投影
+		outlineShader.use();	//	激活 地板的着色器 (shader)
+		outlineShader.setMat4("view", view);	//	绑定视图
+		outlineShader.setMat4("projection", projection);	//	绑定投影
 
 		shader.use();	//	激活 物体的着色器 (shader)
 		shader.setMat4("view", view);
@@ -240,35 +243,26 @@ int main()
 		glBindVertexArray(cubeVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, cubeTexture);
-		//model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		//shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		//model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		//shader.setMat4("model", model);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+	
 
 		// 2nd. 渲染过程：现在绘制对象的略微缩放版本，这次禁用模板写入。
 		// 因为模板缓冲区现在填充了几个1。 缓冲区的1部分未绘制，因此仅绘制对象的大小差异，使其看起来像边框。
 		// -----------------------------------------------------------------------------------------------------------------------------
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
+		glStencilMask(0x00);	//	绘制物体时，禁止修改深度缓冲区
 		glDisable(GL_DEPTH_TEST);
-		floorShader.use();
+		outlineShader.use();
 		float scale = 1.1;
 		// cubes
 		glBindVertexArray(cubeVAO);
-		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		//glBindTexture(GL_TEXTURE_2D, cubeTexture);
 		model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 		model = glm::scale(model, glm::vec3(scale, scale, scale));
-		floorShader.setMat4("model", model);
+		outlineShader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		//model = glm::mat4(1.0f);
-		//model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(scale, scale, scale));
-		//floorShader.setMat4("model", model);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
+
 		glBindVertexArray(0);
 		glStencilMask(0xFF);	//	深度缓冲区 关闭修改
 		glEnable(GL_DEPTH_TEST);	//	开启深度测试
@@ -282,10 +276,10 @@ int main()
 
 	// optional: de-allocate all resources once they've outlived their purpose:
 // ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &planeVAO);
-	glDeleteBuffers(1, &cubeVBO);
-	glDeleteBuffers(1, &planeVBO);
+	//glDeleteVertexArrays(1, &cubeVAO);
+	//glDeleteVertexArrays(1, &planeVAO);
+	//glDeleteBuffers(1, &cubeVBO);
+	//glDeleteBuffers(1, &planeVBO);
 
 	glfwTerminate();
 	return 0;

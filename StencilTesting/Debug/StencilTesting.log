@@ -1,0 +1,11 @@
+﻿  StencilTesting.cpp
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(199): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(257): warning C4305: “初始化”: 从“double”到“float”截断
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(317): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(318): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(322): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(323): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(324): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(325): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+e:\projects\foveatedrendering\stenciltesting\stenciltesting\stenciltesting.cpp(352): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
+  StencilTesting.vcxproj -> E:\Projects\FoveatedRendering\StencilTesting\Debug\StencilTesting.exe
